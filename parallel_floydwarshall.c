@@ -128,11 +128,9 @@ void printMat(int M[N][N], unsigned int seed, char * s) {
 
   for ( i=0; i<N; i++ ) {
     for ( j=0; j<N; j++ ) {
-      if ( M[i][j] == INF ) {
-      	fprintf(fp, "%4s ", "inf");
-      } else {
+        if ( M[i][j] == INF ) fprintf(fp, "%4s ", "inf");
+        else 
       	fprintf(fp, "% 4d ", M[i][j]);
-      }
     }
     fprintf(fp, "\n");
   }
