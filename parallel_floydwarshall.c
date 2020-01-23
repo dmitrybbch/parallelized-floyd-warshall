@@ -143,7 +143,6 @@ void printMat(int M[N][N], unsigned int seed, char * s) {
 }
 
 ////////////////////////////////////////////////////////////
-
 int main(int argc, char * argv[]) {
 
   int (*G)[N]; // adjacent matrix  
