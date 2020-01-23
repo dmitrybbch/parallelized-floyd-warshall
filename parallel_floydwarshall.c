@@ -99,22 +99,15 @@ void floydWarshall ( int G[N][N], int C[N][N], int P[N][N] ) {
     int i, j, k;
   //#pragma omp parallel 
   //{
-    //#pragma omp parallel for shared(C, P)
-    {
+    #pragma omp parallel for shared(C, P)
         for ( k = 0; k < N; k++ ) 
-            //#pragma omp parallel for private(i,j) schedule(dynamic)
-            {
+            #pragma omp parallel for private(i,j) schedule(dynamic)
                 for ( i = 0; i < N; i++ ) 
                     for ( j = 0; j < N; j++ ) 
                         if ( C[i][j] > (C[i][k]+C[k][j]) ) {
                             C[i][j] = C[i][k]+C[k][j];
                             P[i][j] = P[k][j];
                     }
-            }
-            
-    }
-    
-
 }
 
 ////////////////////////////////////////////////////////////
