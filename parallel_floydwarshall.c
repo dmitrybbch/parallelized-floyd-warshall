@@ -13,19 +13,15 @@
 #define ALPHA 0.25              // threshold for creating edges
 #define INF (100*MAX_WEIGHT)    // infinite value
 
-//#define DEBUG 
 
+//#define DEBUG 
 ////////////////////////////////////////////////////////////
 // init graph and data structures
 
 void initGraph ( int G[N][N], int C[N][N], int D[N][N], int P[N][N], unsigned int seed ) {
-
   int i, j;
-  
   //fprintf(stderr, "init start ... ");
-  
   srand(seed);
-  
   // init G and C
   for ( i=0; i < N; i++ ) {
     for ( j=0; j < N; j++ ) {
@@ -35,14 +31,11 @@ void initGraph ( int G[N][N], int C[N][N], int D[N][N], int P[N][N], unsigned in
       P[i][j] = i;
     }
   }
- 
   for ( i=0; i < N; i++ ) {
-    int n_neighbour = (rand() % N) + 1; //random number between 1 .. N
-    
+    int n_neighbour = (rand() % N) + 1; //random number between 1 .. N 
     j = 0;
     int count = 0;
     while ( count < n_neighbour )  {
-
       if ( j == i ) {
       	G[i][j] = 0;
       	C[i][j] = 0;
@@ -58,32 +51,24 @@ void initGraph ( int G[N][N], int C[N][N], int D[N][N], int P[N][N], unsigned in
           count++;
       	}
       }
-      	
       j = (j+1) % N;
-
     }
     G[i][i] = 0;
     C[i][i] = 0;
     D[i][i] = 0;
   }
-
   //fprintf(stderr, "done !\n");
-  
 }
-
 
 ////////////////////////////////////////////////////////////
 // Print ALL-Pair Shortest Paths
 
 void printPath (int G[N][N], int P[N][N], int i, int j, FILE * fp) {
-
   if ( i != j ) {
     printPath (G, P, i, P[i][j], fp);
     G[P[i][j]][j] = 2;
   }
-
   fprintf (fp, " %d ", j);
-
 }
 
 void printAPSP ( int G[N][N], int C[N][N], int D[N][N], int P[N][N] ) {
@@ -111,21 +96,17 @@ void printAPSP ( int G[N][N], int C[N][N], int D[N][N], int P[N][N] ) {
 // Floyd Warshall algorithm
 
 void floydWarshall ( int G[N][N], int C[N][N], int P[N][N] ) {
-
   int i, j, k;
   //#pragma omp parallel 
   //{
-    for ( k = 0; k < N; k++ ) {
-      for ( i = 0; i < N; i++ ) {
-        for ( j = 0; j < N; j++ ) {
+    for ( k = 0; k < N; k++ ) 
+      for ( i = 0; i < N; i++ ) 
+        for ( j = 0; j < N; j++ ) 
           if ( C[i][j] > (C[i][k]+C[k][j]) ) {
             C[i][j] = C[i][k]+C[k][j];
             P[i][j] = P[k][j];
           }
-        }
-      }
-    }
-  //}
+
 }
 
 ////////////////////////////////////////////////////////////
