@@ -1,3 +1,4 @@
+#include <omp.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <limits.h> 
@@ -7,25 +8,20 @@
 #include <unistd.h>
 #include <errno.h>
 
-#define N 10                    // number of vertexes
+#define N 1700                    // number of vertexes
 #define MAX_WEIGHT 100          // max value of weight
 #define ALPHA 0.25              // threshold for creating edges
 #define INF (100*MAX_WEIGHT)    // infinite value
 
-//#define DEBUG 
-//#define DOT
 
+//#define DEBUG 
 ////////////////////////////////////////////////////////////
 // init graph and data structures
 
 void initGraph ( int G[N][N], int C[N][N], int D[N][N], int P[N][N], unsigned int seed ) {
-
   int i, j;
-  
   //fprintf(stderr, "init start ... ");
-  
   srand(seed);
-  
   // init G and C
   for ( i=0; i < N; i++ ) {
     for ( j=0; j < N; j++ ) {
@@ -35,14 +31,11 @@ void initGraph ( int G[N][N], int C[N][N], int D[N][N], int P[N][N], unsigned in
       P[i][j] = i;
     }
   }
- 
   for ( i=0; i < N; i++ ) {
-    int n_neighbour = (rand() % N) + 1; // random number between 1 .. N
-    
+    int n_neighbour = (rand() % N) + 1; //random number between 1 .. N 
     j = 0;
     int count = 0;
     while ( count < n_neighbour )  {
-
       if ( j == i ) {
       	G[i][j] = 0;
       	C[i][j] = 0;
@@ -58,67 +51,24 @@ void initGraph ( int G[N][N], int C[N][N], int D[N][N], int P[N][N], unsigned in
           count++;
       	}
       }
-      	
       j = (j+1) % N;
-
     }
-    
+    G[i][i] = 0;
+    C[i][i] = 0;
+    D[i][i] = 0;
   }
-
   //fprintf(stderr, "done !\n");
-  
 }
-
-////////////////////////////////////////////////////////////
-// print graph in DOT format
-
-void printGraph ( int G[N][N], int C[N][N], char * fname ) {
-  
-  FILE * fp;
-  int i, j;
-
-  fp = fopen (fname, "w+");
-
-  fprintf(fp, "digraph {\n");
-    
-  for ( i=0; i<N; i++ ) {
-    for ( j=0; j<N; j++ ) {
-
-      if ( G[i][j] == 1 ) { 
-      	fprintf(fp, "\t %s%d -> %s%d[label=\"%d\",weight=\"%d\"];\n", 
-      	  "N", i,
-      	  "N", j,
-      	  C[i][j], C[i][j] );
-      }
-
-      if ( G[i][j] == 2 ) { 
-      	fprintf(fp, "\t %s%d -> %s%d[label=\"%d\",weight=\"%d\",color=red];\n", 
-      	  "N", i,
-      	  "N", j,
-      	  C[i][j], C[i][j] );
-      }
-
-    }
-  }
-
-  fprintf(fp, "}\n");
-  
-  fclose(fp);
-}
-
 
 ////////////////////////////////////////////////////////////
 // Print ALL-Pair Shortest Paths
 
 void printPath (int G[N][N], int P[N][N], int i, int j, FILE * fp) {
-
   if ( i != j ) {
     printPath (G, P, i, P[i][j], fp);
     G[P[i][j]][j] = 2;
   }
-
   fprintf (fp, " %d ", j);
-
 }
 
 void printAPSP ( int G[N][N], int C[N][N], int D[N][N], int P[N][N] ) {
@@ -146,22 +96,25 @@ void printAPSP ( int G[N][N], int C[N][N], int D[N][N], int P[N][N] ) {
 // Floyd Warshall algorithm
 
 void floydWarshall ( int G[N][N], int C[N][N], int P[N][N] ) {
+    int i, j, k;
+  //#pragma omp parallel 
+  //{
+    //#pragma omp parallel for shared(C, P)
+    
+        for ( k = 0; k < N; k++ ) 
+            //#pragma omp parallel for private(i,j) schedule(dynamic)
+            
+                for ( i = 0; i < N; i++ ) 
+                    for ( j = 0; j < N; j++ ) 
+                        if ( C[i][j] > (C[i][k]+C[k][j]) ) {
+                            C[i][j] = C[i][k]+C[k][j];
+                            P[i][j] = P[k][j];
+                    }
+            
+            
+    
+    
 
-  int i, j, k;
-
-  for ( k = 0; k < N; k++ ) {
-    for ( i = 0; i < N; i++ ) {
-      for ( j = 0; j < N; j++ ) {
-      	
-      	if ( C[i][j] > (C[i][k]+C[k][j]) ) {
-      	  C[i][j] = C[i][k]+C[k][j];
-      	  P[i][j] = P[k][j];
-      	}
-
-      }
-    }
-  }
-  
 }
 
 ////////////////////////////////////////////////////////////
@@ -183,11 +136,9 @@ void printMat(int M[N][N], unsigned int seed, char * s) {
 
   for ( i=0; i<N; i++ ) {
     for ( j=0; j<N; j++ ) {
-      if ( M[i][j] == INF ) {
-      	fprintf(fp, "%4s ", "inf");
-      } else {
+        if ( M[i][j] == INF ) fprintf(fp, "%4s ", "inf");
+        else 
       	fprintf(fp, "% 4d ", M[i][j]);
-      }
     }
     fprintf(fp, "\n");
   }
@@ -200,7 +151,6 @@ void printMat(int M[N][N], unsigned int seed, char * s) {
 }
 
 ////////////////////////////////////////////////////////////
-
 int main(int argc, char * argv[]) {
 
   int (*G)[N]; // adjacent matrix  
@@ -219,7 +169,7 @@ int main(int argc, char * argv[]) {
     seed = time(NULL)*getpid();
   }
 
-  //fprintf(stderr, "Floy-Warshall\n" );
+  //fprintf(stderr, "Floyd-Warshall\n" );
   //fprintf(stderr, "N: %d\n",       N);
   //fprintf(stderr, "seed: %u\n", seed);
 
@@ -245,10 +195,6 @@ int main(int argc, char * argv[]) {
 
   initGraph(G, C, D, P, seed);
 
-#ifdef DOT
-  printGraph(G, C, "graphin-s.dot");
-#endif
-
   printMat(C, seed, "matcost-s.in");
 
   gettimeofday (&t[0], NULL); 
@@ -263,10 +209,7 @@ int main(int argc, char * argv[]) {
   printAPSP(G, C, D, P);
 #endif
 
-#ifdef DOT
-  printGraph(G, C, "graphout-s.dot");
-#endif
-
+  //calcolo del tempo sottraendo t[1] a t[0]
   dt = (double)(t[1].tv_sec - t[0].tv_sec) + ((double)(t[1].tv_usec - t[0].tv_usec)*1.0e-6);
 
   fprintf(stderr, "Floyd-Warshall  N: %d  time: %.3f ms  seed: %u\n", N, dt*1.0e3, seed);

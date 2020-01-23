@@ -8,7 +8,7 @@
 #include <unistd.h>
 #include <errno.h>
 
-#define N 10                    // number of vertexes
+#define N 1700                    // number of vertexes
 #define MAX_WEIGHT 100          // max value of weight
 #define ALPHA 0.25              // threshold for creating edges
 #define INF (100*MAX_WEIGHT)    // infinite value
@@ -96,16 +96,24 @@ void printAPSP ( int G[N][N], int C[N][N], int D[N][N], int P[N][N] ) {
 // Floyd Warshall algorithm
 
 void floydWarshall ( int G[N][N], int C[N][N], int P[N][N] ) {
-  int i, j, k;
+    int i, j, k;
   //#pragma omp parallel 
   //{
-    for ( k = 0; k < N; k++ ) 
-      for ( i = 0; i < N; i++ ) 
-        for ( j = 0; j < N; j++ ) 
-          if ( C[i][j] > (C[i][k]+C[k][j]) ) {
-            C[i][j] = C[i][k]+C[k][j];
-            P[i][j] = P[k][j];
-          }
+    //#pragma omp parallel for shared(C, P)
+    {
+        for ( k = 0; k < N; k++ ) 
+            //#pragma omp parallel for private(i,j) schedule(dynamic)
+            {
+                for ( i = 0; i < N; i++ ) 
+                    for ( j = 0; j < N; j++ ) 
+                        if ( C[i][j] > (C[i][k]+C[k][j]) ) {
+                            C[i][j] = C[i][k]+C[k][j];
+                            P[i][j] = P[k][j];
+                    }
+            }
+            
+    }
+    
 
 }
 
