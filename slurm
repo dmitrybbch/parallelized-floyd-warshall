@@ -16,6 +16,6 @@ export OMP_PROC_BIND=false
 export MP_BIND=false
 export ACC_NUM_CORES=4
 
-pgcc -I${MPIINC} -L${MPILIB} -lmpi -acc -ta=multicore -Minfo=all -o accmpi main.c
+pgcc -I${MPIINC} -L${MPILIB} -lmpi -acc -ta=multicore -Minfo=all -o floypar parallel_floywarshall.c
 # srun --cpu_bind=v,sockets --mem_bind=v,local ./accmpi
-srun ./accmpi
+srun ./floydpar
