@@ -16,8 +16,8 @@
 
 /* #define PRINT_TERMINAL */
 
-int initializeGraph(int n, float *A, unsigned int seed);
-int printGraphTerminal(int n, float *A);
+int initMatrice(int n, float *A, unsigned int seed);
+int stampaTerminale(int n, float *A);
 
 int main(int argc, char *argv[]) {
 	int N = 0;
@@ -68,12 +68,12 @@ int main(int argc, char *argv[]) {
 				seed = time(NULL);
 			}
 			A = (float*) malloc(sizeof(float) * N * N);
-			if (initializeGraph(N, A, seed)) {
+			if (initMatrice(N, A, seed)) {
 				fprintf(stderr, "Error in graph initialization\n");
 			}
 
 #ifdef PRINT_TERMINAL
-			if (printGraphTerminal(N, A)) {
+			if (stampaTerminale(N, A)) {
 				fprintf(stderr, "Error in terminal printing\n");
 			}
 #endif
@@ -174,7 +174,7 @@ int main(int argc, char *argv[]) {
 		if (rank == 0) {
 
 #ifdef PRINT_TERMINAL
-			if (printGraphTerminal(N, A)) {
+			if (stampaTerminale(N, A)) {
 				fprintf(stderr, "Error in terminal printing\n");
 			}
 #endif
@@ -210,7 +210,7 @@ int main(int argc, char *argv[]) {
  * @param seed{unsigned int} seed for the pseudorandom number generator
  * @return {int}
  */
-int initializeGraph(int n, float *A, unsigned int seed) {
+int initMatrice(int n, float *A, unsigned int seed) {
 	if (n <= 0 || A == NULL) {
 		return -1;
 	}
@@ -247,7 +247,7 @@ int initializeGraph(int n, float *A, unsigned int seed) {
  * @param A{float*} graph matrix (row-wise representation)
  * @return {int}
  */
-int printGraphTerminal(int n, float *A) {
+int stampaTerminale(int n, float *A) {
 	if (n <= 0 || A == NULL) {
 		return -1;
 	}
